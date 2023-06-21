@@ -21,6 +21,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -29,8 +30,6 @@ import (
 	"github.com/FoundationDB/fdb-kubernetes-operator/internal"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"context"
 
 	fdbv1beta2 "github.com/FoundationDB/fdb-kubernetes-operator/api/v1beta2"
 	"github.com/fatih/color"
@@ -135,16 +134,15 @@ func newAnalyzeCmd(streams genericclioptions.IOStreams) *cobra.Command {
 						errs = append(errs, fmt.Errorf("could not get cluster: %s/%s", namespace, clusterName))
 					}
 					errs = append(errs, err)
-				}
-
-				err = analyzeCluster(cmd, kubeClient, cluster, autoFix, wait, ignoreConditions, ignoreRemovals)
-				if err != nil {
-					errs = append(errs, err)
-				}
-
-				err = analyzeStatus(cmd, config, clientSet, kubeClient, cluster, autoFix)
-				if err != nil {
-					errs = append(errs, err)
+				} else {
+					err = analyzeCluster(cmd, kubeClient, cluster, autoFix, wait, ignoreConditions, ignoreRemovals)
+					if err != nil {
+						errs = append(errs, err)
+					}
+					err = analyzeStatus(cmd, config, clientSet, kubeClient, cluster, autoFix)
+					if err != nil {
+						errs = append(errs, err)
+					}
 				}
 			}
 
